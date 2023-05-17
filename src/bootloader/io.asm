@@ -1,5 +1,6 @@
 [BITS 16]
 
+; bx -> pointer to null-terminated string to display
 print_string:
     pusha
 
@@ -15,6 +16,12 @@ print_string:
     .end:
         popa
         ret
+
+; al -> character to print
+char_out:
+    mov ah, 0x0e
+    int 0x10
+    ret
 
 char_in:
     pusha

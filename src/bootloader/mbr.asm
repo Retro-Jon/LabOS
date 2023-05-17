@@ -1,12 +1,8 @@
 [ORG 0x7c00]
 [BITS 16]
 
-KERNEL_OFFSET equ 0x0500
-
-global boot
-
 boot:
-    jmp _start
+    jmp 0:_start
     
     times 0x0B-($-$$) db 0
 
@@ -32,50 +28,50 @@ boot:
     FileSysType:       db    "FAT12   "
 
 %include "src/bootloader/disk.asm"
-
-_start:
-    cli
-    ; Clear segments
-    xor ax, ax
-    mov es, ax
-    mov ds, ax
-
-    sti
-    mov bp, 0x7c00
-    mov ss, ax
-    mov sp, bp
-
-    mov bx, KernelLoading
-    call print_string
-
-    call load_kernel
-
-    mov bx, StartingOS
-    call print_string
-
-    jmp enter_protected_mode
-
 KernelLoading db "Loading Kernel...", 0x0a, 0x0d, 0x00
 StartingOS db "Starting Lab OS...", 0x0a, 0x0d, 0x00
 
 %include "src/bootloader/gdt.asm"
-%include "src/bootloader/switch-to-32bit.asm"
 
 BOOT_DRIVE db 0
+KERNEL_OFFSET equ 0x0800
 
-[BITS 16]
-load_kernel:
-    mov bx, KERNEL_OFFSET   ; destination
-    mov al, 1               ; # sectors
-    mov dh, [BOOT_DRIVE]    ; disk
+_start:
+    mov ax, 0
+    mov ds, ax
+    mov bx, 0x8000
+    mov ss, bx
+    mov sp, ax
 
-    call disk_load
+    load_kernel:
+        mov bx, KERNEL_OFFSET   ; destination
+        mov al, 1               ; # sectors
+        mov dh, [BOOT_DRIVE]    ; disk
+        mov cl, 2               ; start sector
 
-    ret
+        call disk_load
+    
+    kernel_start:
+        mov ax, 0
+        mov ss, ax
+        mov sp, 0xfffc
 
-[BITS 32]
-start_kernel:
-    jmp CODE_SEG:KERNEL_OFFSET ; start kernel
+        mov ax, 0
+        mov ds, ax
+        mov es, ax
+        mov fs, ax
+        mov gs, ax
+
+        cli
+        lgdt[gdt_descriptor]
+        mov eax, cr0
+        or eax, 0x1
+        mov cr0, eax
+        jmp CODE_SEG:kernel
 
 times 510-($-$$) db 0
 dw 0xaa55
+
+[bits 32]
+
+kernel:

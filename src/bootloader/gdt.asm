@@ -2,7 +2,8 @@
 ; get_start and gdt_end to compute size
 
 gdt_start:
-    dq 0x00
+    dd 0x0
+    dd 0x0
 
 gdt_code:
     dw 0xffff       ; segment length, bits 0-15
@@ -25,7 +26,7 @@ gdt_end:
 ; GDT descriptor
 gdt_descriptor:
     dw gdt_end - gdt_start - 1  ; size 16 bit
-    dd gdt_start + 0x7c00       ; address 32 bit
+    dd gdt_start                ; address 32 bit
 
 CODE_SEG equ gdt_code - gdt_start
 DATA_SEG equ gdt_data - gdt_start

@@ -5,8 +5,8 @@ reset_disk:
     push ax
 
     .loop:
-        xor ax, ax
         int 0x13
+
         jc .loop
 
     pop ax
@@ -15,6 +15,7 @@ reset_disk:
 ; bx = destination
 ; al = # sectors
 ; dh = disk to load from
+; cl sector to start from
 disk_load:
     cld
     clc
@@ -23,7 +24,6 @@ disk_load:
     
     mov ah, 0x02    ; Read Sectors Opcode
     mov ch, 0       ; Read from cylinder 0
-    mov cl, 2       ; Start from sector2
     mov es, bx
     xor bx, bx
 
