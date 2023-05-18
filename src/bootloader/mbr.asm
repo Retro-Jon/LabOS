@@ -28,9 +28,6 @@ boot:
     FileSysType:       db    "FAT12   "
 
 %include "src/bootloader/disk.asm"
-KernelLoading db "Loading Kernel...", 0x0a, 0x0d, 0x00
-StartingOS db "Starting Lab OS...", 0x0a, 0x0d, 0x00
-
 %include "src/bootloader/gdt.asm"
 
 BOOT_DRIVE db 0
@@ -45,7 +42,7 @@ _start:
 
     load_kernel:
         mov bx, KERNEL_OFFSET   ; destination
-        mov al, 1               ; # sectors
+        mov al, 4               ; # sectors
         mov dh, [BOOT_DRIVE]    ; disk
         mov cl, 2               ; start sector
 
@@ -55,8 +52,6 @@ _start:
         mov ax, 0
         mov ss, ax
         mov sp, 0xfffc
-
-        mov ax, 0
         mov ds, ax
         mov es, ax
         mov fs, ax
@@ -75,3 +70,6 @@ dw 0xaa55
 [bits 32]
 
 kernel:
+    push ebp
+    mov ebp, esp
+
